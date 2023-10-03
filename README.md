@@ -6,4 +6,5 @@
 
 ## Ссылки на проект
 
+IP 84.252.140.136
 Backend https://api.vashinkognito.movies.nomoredomainsrocks.ru
