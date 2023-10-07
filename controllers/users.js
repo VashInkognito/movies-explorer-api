@@ -5,6 +5,7 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/bad-request-err'); // 400
 const NotFoundError = require('../errors/not-found-err'); // 404
 const ConflictError = require('../errors/conflict-err'); // 409
+const { ERROR_MESSAGES } = require('../utils/constants');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -19,16 +20,16 @@ module.exports.editUserInfo = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, email }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        return next(new NotFoundError('Пользователь не найден'));
+        return next(new NotFoundError(ERROR_MESSAGES.USER_NOT_FOUND));
       }
       return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return next(new ConflictError('Пользователь с таким email уже существует'));
+        return next(new ConflictError(ERROR_MESSAGES.USER_CONFLICT));
       }
       if (err.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные при обновлении пользователя'));
+        return next(new BadRequestError(ERROR_MESSAGES.INCORRECT_DATA));
       }
       return next(err);
     });
@@ -48,10 +49,10 @@ module.exports.createUserInfo = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.code === 11000) {
-        return next(new ConflictError('Пользователь с таким email уже существует'));
+        return next(new ConflictError(ERROR_MESSAGES.USER_CONFLICT));
       }
       if (err.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
+        return next(new BadRequestError(ERROR_MESSAGES.INCORRECT_DATA));
       }
       return next(err);
     });

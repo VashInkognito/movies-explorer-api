@@ -9,32 +9,26 @@ const limiter = require('./middlewares/limiter');
 const errorHandler = require('./middlewares/error-handler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const router = require('./routes/index');
+const config = require('./utils/config');
+const { CORS_URL, CORS_OPTIONS } = require('./utils/constants');
 
 const {
-  PORT = 3000,
-  DB_ADDRESS = 'mongodb://127.0.0.1:27017/bitfilmsdb',
+  PORT = config.PORT,
+  DB_ADDRESS = config.DB_ADDRESS,
 } = process.env;
 
 // подключаемся к серверу mongo
-const options = {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
-  autoIndex: true,
-};
-mongoose.connect(DB_ADDRESS, options);
+mongoose.connect(DB_ADDRESS, CORS_OPTIONS);
 
 const app = express();
 
-app.use(cors({ origin: ['http://localhost:3001', 'https://localhost:3001', 'https://vashinkognito.movies.nomoredomainsrocks.ru', 'http://vashinkognito.movies.nomoredomainsrocks.ru'] }));
+app.use(cors({ origin: CORS_URL }));
 
 // для сборки JSON-файла
 app.use(express.json());
 
 // настройка заголовков HTTP, связанные с защитой
 app.use(helmet());
-
-// ограничение количества запросов с одного IP-адреса в ед.времени
-app.use(limiter);
 
 // краш-тест сервера
 app.get('/crash-test', () => {
@@ -45,6 +39,9 @@ app.get('/crash-test', () => {
 
 // подключаем логгер запросов
 app.use(requestLogger);
+
+// ограничение количества запросов с одного IP-адреса в ед.времени
+app.use(limiter);
 
 app.use(router);
 
